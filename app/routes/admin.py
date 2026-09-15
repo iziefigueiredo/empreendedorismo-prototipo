@@ -35,6 +35,9 @@ def usuarios():
 @admin_required
 def desativar_usuario(id):
     usuario = Usuario.query.get_or_404(id)
+    if usuario.id == current_user.id:
+        flash('Você não pode desativar sua própria conta.', 'warning')
+        return redirect(url_for('admin.usuarios'))
     usuario.ativo = not usuario.ativo
     db.session.commit()
     flash('Status do usuário atualizado.', 'success')
