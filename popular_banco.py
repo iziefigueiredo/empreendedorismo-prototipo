@@ -39,8 +39,15 @@ with app.app_context():
         nomes = nomes_f if sexo == 'F' else nomes_m
         nome_completo = f"{random.choice(nomes)} {random.choice(sobrenomes)}"
 
-        # Idades variadas (3 meses a 5 anos)
-        meses_aleatorio = random.randint(3, 60)
+        # Idades variadas para creche (3 meses a 5 anos)
+        # Distribuição realista: mais crianças entre 1-3 anos
+        rand_dist = random.random()
+        if rand_dist < 0.7:  # 70% entre 1-3 anos (concentração maior)
+            meses_aleatorio = random.randint(12, 36)
+        elif rand_dist < 0.85:  # 15% recém-nascidos até 1 ano
+            meses_aleatorio = random.randint(3, 12)
+        else:  # 15% entre 3-5 anos
+            meses_aleatorio = random.randint(36, 60)
         nascimento = date.today() - timedelta(days=meses_aleatorio*30)
 
         # Caminho da foto fake
