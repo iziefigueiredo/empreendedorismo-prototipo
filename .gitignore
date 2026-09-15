@@ -1,0 +1,14 @@
+venv/
+env/
+.venv/
+.env
+__pycache__/
+*.pyc
+*.pyo
+*.db
+*.sqlite3
+.DS_Store
+Thumbs.db
+.vscode/
+.idea/
+!app/static/fotos_fake/

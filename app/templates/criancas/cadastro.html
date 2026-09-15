@@ -1,0 +1,142 @@
+{% extends "shared/base.html" %}
+
+{% block title %}Novo Cadastro{% endblock %}
+
+{% block content %}
+
+<!-- Indicador de etapas -->
+<div class="d-flex align-items-center mb-4 gap-2">
+    <div class="d-flex align-items-center justify-content-center rounded-circle text-white fw-bold"
+         style="width:32px;height:32px;background:#7B1D1D;">1</div>
+    <div style="height:3px;flex:1;background:#ddd;"></div>
+    <div class="d-flex align-items-center justify-content-center rounded-circle fw-bold"
+         style="width:32px;height:32px;background:#ddd;color:#888;">2</div>
+    <div style="height:3px;flex:1;background:#ddd;"></div>
+    <div class="d-flex align-items-center justify-content-center rounded-circle fw-bold"
+         style="width:32px;height:32px;background:#ddd;color:#888;">3</div>
+    <div style="height:3px;flex:1;background:#ddd;"></div>
+    <div class="d-flex align-items-center justify-content-center rounded-circle fw-bold"
+         style="width:32px;height:32px;background:#ddd;color:#888;">4</div>
+</div>
+<p class="text-muted small mb-4">Etapa 1 de 4 — Dados da criança</p>
+
+<div class="card border-0 shadow-sm">
+    <div class="card-body p-4">
+        <form method="POST" action="{{ url_for('criancas.cadastro_etapa1') }}" autocomplete="off">
+            {{ form.hidden_tag() }}
+
+            <div class="mb-3">
+                {{ form.nome.label(class="form-label fw-500") }}
+                {{ form.nome(class="form-control", placeholder="Nome completo da criança") }}
+                {% if form.nome.errors %}
+                    <div class="text-danger small mt-1">{{ form.nome.errors[0] }}</div>
+                {% endif %}
+            </div>
+
+            <div class="row g-3 mb-3">
+                <div class="col-12 col-md-6">
+                    {{ form.data_nascimento.label(class="form-label") }}
+                    {{ form.data_nascimento(class="form-control") }}
+                    {% if form.data_nascimento.errors %}
+                        <div class="text-danger small mt-1">{{ form.data_nascimento.errors[0] }}</div>
+                    {% endif %}
+                </div>
+                <div class="col-12 col-md-6">
+                    {{ form.sexo.label(class="form-label") }}
+                    {{ form.sexo(class="form-select") }}
+                    {% if form.sexo.errors %}
+                        <div class="text-danger small mt-1">{{ form.sexo.errors[0] }}</div>
+                    {% endif %}
+                </div>
+            </div>
+
+            <div class="mb-3">
+                {{ form.turno.label(class="form-label") }}
+                {{ form.turno(class="form-select") }}
+                {% if form.turno.errors %}
+                    <div class="text-danger small mt-1">{{ form.turno.errors[0] }}</div>
+                {% endif %}
+            </div>
+
+                        <!-- Alergia a medicamento -->
+            <div class="mb-3 p-3 rounded" style="background:#f8f8f8;">
+                <label class="form-label fw-bold d-block">Alergia a medicamento?</label>
+                <div class="btn-group" role="group">
+                    <input type="radio" class="btn-check" name="alergia_medicamento" id="alergmed_nao" value="nao" checked onchange="toggleCampo('medicamento', 'alergia_medicamento')">
+                    <label class="btn btn-outline-secondary btn-sm" for="alergmed_nao">Não</label>
+                    <input type="radio" class="btn-check" name="alergia_medicamento" id="alergmed_sim" value="sim" onchange="toggleCampo('medicamento', 'alergia_medicamento')">
+                    <label class="btn btn-outline-secondary btn-sm" for="alergmed_sim">Sim</label>
+                </div>
+                <div id="campo-medicamento" style="display:none;" class="mt-2">
+                    <input type="text" name="alergia_medicamento_texto" class="form-control" placeholder="Quais medicações?">
+                </div>
+            </div>
+
+            <!-- Alergia a comida -->
+            <div class="mb-3 p-3 rounded" style="background:#f8f8f8;">
+                <label class="form-label fw-bold d-block">Alergia a comida?</label>
+                <div class="btn-group" role="group">
+                    <input type="radio" class="btn-check" name="alergia_comida" id="alergcom_nao" value="nao" checked onchange="toggleCampo('comida', 'alergia_comida')">
+                    <label class="btn btn-outline-secondary btn-sm" for="alergcom_nao">Não</label>
+                    <input type="radio" class="btn-check" name="alergia_comida" id="alergcom_sim" value="sim" onchange="toggleCampo('comida', 'alergia_comida')">
+                    <label class="btn btn-outline-secondary btn-sm" for="alergcom_sim">Sim</label>
+                </div>
+                <div id="campo-comida" style="display:none;" class="mt-2">
+                    {% for opcao in ['Leite', 'Ovo', 'Amendoim', 'Glúten', 'Frutos do mar', 'Soja', 'Chocolate'] %}
+                    <div class="form-check">
+                        <input type="checkbox" class="form-check-input" name="alergia_comida_lista" value="{{ opcao }}" id="comida-{{ loop.index }}">
+                        <label class="form-check-label" for="comida-{{ loop.index }}">{{ opcao }}</label>
+                    </div>
+                    {% endfor %}
+                    <div class="form-check">
+                        <input type="checkbox" class="form-check-input" name="alergia_comida_lista" value="Outro" id="comida-outro-check"
+                               onchange="document.getElementById('comida-outro-texto').style.display = this.checked ? '' : 'none'">
+                        <label class="form-check-label" for="comida-outro-check">Outro</label>
+                    </div>
+                    <input type="text" id="comida-outro-texto" name="alergia_comida_outro" class="form-control mt-1" placeholder="Qual?" style="display:none;">
+                </div>
+            </div>
+
+            <!-- Problemas de saúde -->
+            <div class="mb-4 p-3 rounded" style="background:#f8f8f8;">
+                <label class="form-label fw-bold d-block">Problema de saúde?</label>
+                <div class="btn-group" role="group">
+                    <input type="radio" class="btn-check" name="problema_saude" id="probsaude_nao" value="nao" checked onchange="toggleCampo('saude', 'problema_saude')">
+                    <label class="btn btn-outline-secondary btn-sm" for="probsaude_nao">Não</label>
+                    <input type="radio" class="btn-check" name="problema_saude" id="probsaude_sim" value="sim" onchange="toggleCampo('saude', 'problema_saude')">
+                    <label class="btn btn-outline-secondary btn-sm" for="probsaude_sim">Sim</label>
+                </div>
+                <div id="campo-saude" style="display:none;" class="mt-2">
+                    {% for opcao in ['Asma', 'Diabetes tipo 1', 'Epilepsia', 'Autismo (TEA)', 'Deficiência auditiva', 'Deficiência visual', 'Cardiopatia', 'Anemia falciforme'] %}
+                    <div class="form-check">
+                        <input type="checkbox" class="form-check-input" name="problema_saude_lista" value="{{ opcao }}" id="saude-{{ loop.index }}">
+                        <label class="form-check-label" for="saude-{{ loop.index }}">{{ opcao }}</label>
+                    </div>
+                    {% endfor %}
+                    <div class="form-check">
+                        <input type="checkbox" class="form-check-input" name="problema_saude_lista" value="Outro" id="saude-outro-check"
+                               onchange="document.getElementById('saude-outro-texto').style.display = this.checked ? '' : 'none'">
+                        <label class="form-check-label" for="saude-outro-check">Outro</label>
+                    </div>
+                    <input type="text" id="saude-outro-texto" name="problema_saude_outro" class="form-control mt-1" placeholder="Qual?" style="display:none;">
+                </div>
+            </div>
+
+            <script>
+            function toggleCampo(idCampo, nomeRadio) {
+                const campo = document.getElementById('campo-' + idCampo);
+                const selecionado = document.querySelector(`input[name="${nomeRadio}"]:checked`).value;
+                campo.style.display = selecionado === 'sim' ? '' : 'none';
+            }
+            </script>
+
+            <div class="d-grid">
+                <button type="submit" class="btn text-white fw-bold py-2"
+                        style="background-color:#7B1D1D;">
+                    Próximo <i class="bi bi-arrow-right"></i>
+                </button>
+            </div>
+        </form>
+    </div>
+</div>
+{% endblock %}

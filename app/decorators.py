@@ -1,0 +1,23 @@
+from functools import wraps
+from flask import abort
+from flask_login import current_user
+
+
+def admin_required(f):
+    @wraps(f)
+    def decorado(*args, **kwargs):
+        if not current_user.is_authenticated or not current_user.is_admin:
+            abort(403)
+        return f(*args, **kwargs)
+    return decorado
+
+
+def requer_tipo(*tipos_permitidos):
+    def decorator(f):
+        @wraps(f)
+        def decorado(*args, **kwargs):
+            if not current_user.is_authenticated or current_user.tipo not in tipos_permitidos:
+                abort(403)
+            return f(*args, **kwargs)
+        return decorado
+    return decorator

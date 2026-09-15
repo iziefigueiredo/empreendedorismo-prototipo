@@ -1,0 +1,130 @@
+{% extends "shared/base.html" %}
+
+{% block title %}Consultar Dados{% endblock %}
+
+{% block content %}
+
+<!-- Abas -->
+<ul class="nav nav-tabs mb-4">
+    <li class="nav-item">
+        <a class="nav-link active fw-bold" style="color:#7B1D1D; border-bottom: 3px solid #7B1D1D;" href="#">
+            <i class="bi bi-person-fill"></i> Crianças
+        </a>
+    </li>
+    <li class="nav-item">
+        <a class="nav-link text-muted" href="#">
+            <i class="bi bi-box-seam-fill"></i> Estoque
+            <span class="badge bg-secondary ms-1" style="font-size:0.6rem;">em breve</span>
+        </a>
+    </li>
+</ul>
+
+<!-- Cabeçalho -->
+<div class="d-flex justify-content-between align-items-center mb-3">
+    <h6 class="mb-0 text-muted">{{ criancas|length }} criança(s) cadastrada(s)</h6>
+    {% if current_user.is_admin %}
+    <a href="{{ url_for('criancas.cadastro_etapa1') }}" class="btn btn-sm text-white"
+       style="background-color:#7B1D1D;">
+        <i class="bi bi-person-plus-fill"></i> Nova
+    </a>
+    {% endif %}
+</div>
+
+<!-- Busca -->
+<div class="input-group mb-3">
+    <span class="input-group-text bg-white">
+        <i class="bi bi-search" style="color:#7B1D1D;"></i>
+    </span>
+    <input type="text" id="busca" class="form-control border-start-0"
+           placeholder="Buscar por nome..." autocomplete="off">
+</div>
+
+<!-- Filtros de turno -->
+<div class="d-flex gap-2 mb-4 flex-wrap">
+    <button class="btn btn-sm filtro ativo" data-turno="todos"
+            style="background-color:#7B1D1D; color:white;">Todos</button>
+    <button class="btn btn-sm btn-outline-secondary filtro" data-turno="manha">Manhã</button>
+    <button class="btn btn-sm btn-outline-secondary filtro" data-turno="tarde">Tarde</button>
+    <button class="btn btn-sm btn-outline-secondary filtro" data-turno="integral">Integral</button>
+</div>
+
+<!-- Lista -->
+<div id="lista-criancas">
+{% if criancas %}
+    {% for c in criancas %}
+    <div class="card border-0 shadow-sm mb-3 item-crianca"
+         data-nome="{{ c.nome|lower }}"
+         data-turno="{{ c.turno }}">
+        <div class="card-body d-flex justify-content-between align-items-center">
+            <div>
+                <p class="mb-0 fw-bold">{{ c.nome }}</p>
+                    <p class="mb-0 text-muted small">
+                        {% if c.turno == 'manha' %}Manhã
+                        {% elif c.turno == 'tarde' %}Tarde
+                        {% else %}Integral{% endif %}
+                        · {{ c.data_nascimento.strftime('%d/%m/%Y') }}
+                        {% if c.status == 'inativa' %}
+                            · <span class="text-danger">Inativa</span>
+                        {% endif %}
+                        {% if c.status == 'ativa' and c.vestuario_desatualizado %}
+                        · <span class="badge bg-danger text-white">
+                            <i class="bi bi-exclamation-triangle-fill" style="color:#FFC107;"></i> Vestuário
+                        </span>
+                    {% endif %}
+                     </p>
+            </div>
+            <a href="{{ url_for('criancas.detalhe', id=c.id) }}"
+               class="btn btn-sm btn-outline-secondary">
+                <i class="bi bi-eye"></i>
+            </a>
+        </div>
+    </div>
+    {% endfor %}
+{% else %}
+    <div class="text-center py-5 text-muted">
+        <i class="bi bi-person-x" style="font-size:3rem;"></i>
+        <p class="mt-2">Nenhuma criança cadastrada ainda.</p>
+        {% if current_user.is_admin %}
+        <a href="{{ url_for('criancas.cadastro_etapa1') }}" class="btn btn-sm text-white"
+           style="background-color:#7B1D1D;">Cadastrar agora</a>
+        {% endif %}
+    </div>
+{% endif %}
+</div>
+
+<script>
+    document.getElementById('busca').addEventListener('input', function() {
+        filtrar();
+    });
+
+    document.querySelectorAll('.filtro').forEach(btn => {
+        btn.addEventListener('click', function() {
+            document.querySelectorAll('.filtro').forEach(b => {
+                b.style.backgroundColor = '';
+                b.style.color = '';
+                b.classList.remove('ativo');
+                b.classList.add('btn-outline-secondary');
+            });
+            this.classList.add('ativo');
+            this.classList.remove('btn-outline-secondary');
+            this.style.backgroundColor = '#7B1D1D';
+            this.style.color = 'white';
+            filtrar();
+        });
+    });
+
+    function filtrar() {
+        const busca = document.getElementById('busca').value.toLowerCase();
+        const turno = document.querySelector('.filtro.ativo').dataset.turno;
+
+        document.querySelectorAll('.item-crianca').forEach(card => {
+            const nome = card.dataset.nome;
+            const t = card.dataset.turno;
+            const nomeBate = nome.includes(busca);
+            const turnoBate = turno === 'todos' || t === turno;
+            card.style.display = (nomeBate && turnoBate) ? '' : 'none';
+        });
+    }
+</script>
+
+{% endblock %}

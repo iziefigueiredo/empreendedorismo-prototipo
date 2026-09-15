@@ -1,0 +1,268 @@
+{% extends "shared/base.html" %}
+
+{% block title %}Relatórios{% endblock %}
+
+{% block content %}
+
+<h5 class="fw-bold mb-4">Relatórios</h5>
+
+<div class="row g-2 mb-4">
+    <div class="col-4">
+        <div class="card border-0 shadow-sm text-center" style="border-left: 4px solid #7B1D1D !important;">
+            <div class="card-body py-3 px-1">
+                <h2 class="fw-bold mb-0" style="color:#7B1D1D;">{{ total }}</h2>
+                <p class="text-muted mb-0" style="font-size:0.65rem;">Crianças</p>
+            </div>
+        </div>
+    </div>
+    <div class="col-4">
+        <div class="card border-0 shadow-sm text-center">
+            <div class="card-body py-3 px-1">
+                <h2 class="fw-bold mb-0" style="color:#B8860B;">{{ aniversariantes|length }}</h2>
+                <p class="text-muted mb-0" style="font-size:0.65rem;">Aniversariantes {{ mes_atual }}</p>
+            </div>
+        </div>
+    </div>
+    <div class="col-4">
+        <div class="card border-0 shadow-sm text-center">
+            <div class="card-body py-3 px-1">
+                <h2 class="fw-bold mb-0" style="color:#B03A2E;">{{ sem_nenhum|length }}</h2>
+                <p class="text-muted mb-0" style="font-size:0.65rem;">Sem docs</p>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="card border-0 shadow-sm mb-4">
+    <div class="card-header bg-white fw-bold" style="border-left: 4px solid #7B1D1D;">
+        <i class="bi bi-clock-fill" style="color:#7B1D1D;"></i> Crianças por turno
+    </div>
+    <div class="card-body">
+        <canvas id="graficoTurno" height="120"></canvas>
+    </div>
+</div>
+
+<div class="card border-0 shadow-sm mb-4">
+    <div class="card-header bg-white fw-bold" style="border-left: 4px solid #1A5276;">
+        <i class="bi bi-bar-chart-fill" style="color:#1A5276;"></i> Crianças por faixa etária
+    </div>
+    <div class="card-body">
+        <canvas id="graficoFaixa" height="120"></canvas>
+    </div>
+</div>
+
+<div class="card border-0 shadow-sm mb-4">
+    <div class="card-header bg-white fw-bold" style="border-left: 4px solid #6C3483;">
+        <i class="bi bi-gender-ambiguous" style="color:#6C3483;"></i> Crianças por sexo
+    </div>
+    <div class="card-body">
+        <canvas id="graficoSexo" height="120"></canvas>
+    </div>
+</div>
+
+<div class="card border-0 shadow-sm mb-4">
+    <div class="card-header bg-white fw-bold" style="border-left: 4px solid #2E6B5E;">
+        <i class="bi bi-graph-up" style="color:#2E6B5E;"></i> Cadastros por mês
+    </div>
+    <div class="card-body">
+        <canvas id="graficoCadastros" height="120"></canvas>
+    </div>
+</div>
+
+<div class="card border-0 shadow-sm mb-4">
+    <div class="card-header bg-white fw-bold" style="border-left: 4px solid #B8860B;">
+        <i class="bi bi-balloon-fill" style="color:#B8860B;"></i> Aniversariantes de {{ mes_atual }}
+    </div>
+    <div class="card-body p-0">
+        {% if aniversariantes %}
+            {% for c in aniversariantes %}
+            <div class="d-flex justify-content-between align-items-center p-3 {% if not loop.last %}border-bottom{% endif %}">
+                <div>
+                    <p class="mb-0 fw-bold">{{ c.nome }}</p>
+                    <p class="mb-0 text-muted small">Dia {{ c.data_nascimento.day }} de {{ mes_atual }}</p>
+                </div>
+                <a href="{{ url_for('criancas.detalhe', id=c.id) }}" class="btn btn-sm btn-outline-secondary">
+                    <i class="bi bi-eye"></i>
+                </a>
+            </div>
+            {% endfor %}
+        {% else %}
+            <p class="text-muted p-3 mb-0">Nenhum aniversariante este mês.</p>
+        {% endif %}
+    </div>
+</div>
+
+<div class="card border-0 shadow-sm mb-4">
+    <div class="card-header bg-white fw-bold" style="border-left: 4px solid #B03A2E;">
+        <i class="bi bi-heart-pulse-fill" style="color:#B03A2E;"></i> Saúde
+    </div>
+    <div class="card-body p-0">
+        {% if com_alergia %}
+            <p class="px-3 pt-3 text-muted small mb-1">Com alergias ({{ com_alergia|length }})</p>
+            {% for c in com_alergia %}
+            <div class="d-flex justify-content-between align-items-center px-3 py-2 border-bottom">
+                <div>
+                    <p class="mb-0 fw-bold">{{ c.nome }}</p>
+                    <span class="badge bg-warning text-dark small">{{ c.alergias }}</span>
+                </div>
+                <a href="{{ url_for('criancas.detalhe', id=c.id) }}" class="btn btn-sm btn-outline-secondary">
+                    <i class="bi bi-eye"></i>
+                </a>
+            </div>
+            {% endfor %}
+        {% endif %}
+        {% if com_problema %}
+            <p class="px-3 pt-3 text-muted small mb-1">Com problemas médicos ({{ com_problema|length }})</p>
+            {% for c in com_problema %}
+            <div class="d-flex justify-content-between align-items-center px-3 py-2 border-bottom">
+                <div>
+                    <p class="mb-0 fw-bold">{{ c.nome }}</p>
+                    <span class="badge bg-danger small">{{ c.problemas_medicos }}</span>
+                </div>
+                <a href="{{ url_for('criancas.detalhe', id=c.id) }}" class="btn btn-sm btn-outline-secondary">
+                    <i class="bi bi-eye"></i>
+                </a>
+            </div>
+            {% endfor %}
+        {% endif %}
+        {% if not com_alergia and not com_problema %}
+            <p class="text-muted p-3 mb-0">Nenhuma ocorrência registrada.</p>
+        {% endif %}
+    </div>
+</div>
+
+<div class="card border-0 shadow-sm mb-4">
+    <div class="card-header bg-white fw-bold" style="border-left: 4px solid #6C3483;">
+        <i class="bi bi-person-heart" style="color:#6C3483;"></i> Mães solo ({{ maes_solo|length }})
+    </div>
+    <div class="card-body p-0">
+        {% if maes_solo %}
+            {% for c in maes_solo %}
+            <div class="d-flex justify-content-between align-items-center p-3 {% if not loop.last %}border-bottom{% endif %}">
+                <p class="mb-0 fw-bold">{{ c.nome }}</p>
+                <a href="{{ url_for('criancas.detalhe', id=c.id) }}" class="btn btn-sm btn-outline-secondary">
+                    <i class="bi bi-eye"></i>
+                </a>
+            </div>
+            {% endfor %}
+        {% else %}
+            <p class="text-muted p-3 mb-0">Nenhum registro encontrado.</p>
+        {% endif %}
+    </div>
+</div>
+
+<div class="card border-0 shadow-sm mb-4">
+    <div class="card-header bg-white fw-bold" style="border-left: 4px solid #B03A2E;">
+        <i class="bi bi-folder-x" style="color:#B03A2E;"></i> Documentos pendentes
+    </div>
+    <div class="card-body p-0">
+        {% set pendencias = [
+            (sem_doc_proprio, 'Sem documento da criança'),
+            (sem_vacina, 'Sem carteirinha de vacinação'),
+            (sem_residencia, 'Sem comprovante de residência'),
+            (sem_bolsa, 'Sem cartão Bolsa Família / NISS'),
+            (sem_matricula, 'Sem matrícula escolar (4+ anos)'),
+            (sem_nenhum, 'Sem nenhum documento'),
+        ] %}
+        {% for lista, label in pendencias %}
+        <div class="p-3 border-bottom">
+            <div class="d-flex justify-content-between align-items-center mb-2">
+                <span class="fw-bold small">{{ label }}</span>
+                <span class="badge" style="background-color:#B03A2E;">{{ lista|length }}</span>
+            </div>
+            {% if lista %}
+                {% for c in lista %}
+                <div class="d-flex justify-content-between align-items-center py-1">
+                    <span class="small text-muted">{{ c.nome if c.nome is defined else c.crianca.nome }}</span>
+                    <a href="{{ url_for('criancas.detalhe', id=c.id if c.id is defined else c.crianca.id) }}"
+                       class="btn btn-sm btn-outline-secondary py-0">
+                        <i class="bi bi-eye"></i>
+                    </a>
+                </div>
+                {% endfor %}
+            {% else %}
+                <p class="text-success small mb-0"><i class="bi bi-check-circle-fill"></i> Tudo em dia</p>
+            {% endif %}
+        </div>
+        {% endfor %}
+    </div>
+</div>
+
+<div class="card border-0 shadow-sm mb-4">
+    <div class="card-header bg-white fw-bold" style="border-left: 4px solid #2E6B5E;">
+        <i class="bi bi-card-text" style="color:#2E6B5E;"></i> Famílias com Bolsa Família ({{ com_bolsa|length }})
+    </div>
+    <div class="card-body p-0">
+        {% if com_bolsa %}
+            {% for c in com_bolsa %}
+            <div class="d-flex justify-content-between align-items-center p-3 {% if not loop.last %}border-bottom{% endif %}">
+                <p class="mb-0 fw-bold">{{ c.nome }}</p>
+                <a href="{{ url_for('criancas.detalhe', id=c.id) }}" class="btn btn-sm btn-outline-secondary">
+                    <i class="bi bi-eye"></i>
+                </a>
+            </div>
+            {% endfor %}
+        {% else %}
+            <p class="text-muted p-3 mb-0">Nenhum registro encontrado.</p>
+        {% endif %}
+    </div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script>
+const cores = ['#7B1D1D','#B8860B','#2E6B5E','#1A5276','#6C3483','#B03A2E'];
+
+new Chart(document.getElementById('graficoTurno'), {
+    type: 'bar',
+    data: {
+        labels: ['Manhã', 'Tarde', 'Integral'],
+        datasets: [{
+            data: [{{ turno_manha }}, {{ turno_tarde }}, {{ turno_integral }}],
+            backgroundColor: ['#7B1D1D', '#B8860B', '#2E6B5E'],
+            borderRadius: 6,
+        }]
+    },
+    options: { plugins: { legend: { display: false } }, scales: { y: { beginAtZero: true, ticks: { stepSize: 1 } } } }
+});
+
+new Chart(document.getElementById('graficoFaixa'), {
+    type: 'bar',
+    data: {
+        labels: {{ faixas.keys()|list|tojson }},
+        datasets: [{
+            data: {{ faixas.values()|list|tojson }},
+            backgroundColor: cores,
+            borderRadius: 6,
+        }]
+    },
+    options: { plugins: { legend: { display: false } }, scales: { y: { beginAtZero: true, ticks: { stepSize: 1 } } } }
+});
+
+new Chart(document.getElementById('graficoSexo'), {
+    type: 'bar',
+    data: {
+        labels: ['Masculino', 'Feminino'],
+        datasets: [{
+            data: [{{ masc }}, {{ fem }}],
+            backgroundColor: ['#1A5276', '#B03A2E'],
+            borderRadius: 6,
+        }]
+    },
+    options: { plugins: { legend: { display: false } }, scales: { y: { beginAtZero: true, ticks: { stepSize: 1 } } } }
+});
+
+new Chart(document.getElementById('graficoCadastros'), {
+    type: 'bar',
+    data: {
+        labels: {{ meses_labels|tojson }},
+        datasets: [{
+            data: {{ cadastros_mes|tojson }},
+            backgroundColor: '#2E6B5E',
+            borderRadius: 6,
+        }]
+    },
+    options: { plugins: { legend: { display: false } }, scales: { y: { beginAtZero: true, ticks: { stepSize: 1 } } } }
+});
+</script>
+
+{% endblock %}

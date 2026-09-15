@@ -1,0 +1,99 @@
+{% extends "shared/base.html" %}
+
+{% block title %}Novo Cadastro — Documentos{% endblock %}
+
+{% block content %}
+
+<!-- Indicador de etapas -->
+<div class="d-flex align-items-center mb-4 gap-2">
+    <div class="d-flex align-items-center justify-content-center rounded-circle text-white fw-bold"
+         style="width:32px;height:32px;background:#7B1D1D;">✓</div>
+    <div style="height:3px;flex:1;background:#7B1D1D;"></div>
+    <div class="d-flex align-items-center justify-content-center rounded-circle text-white fw-bold"
+         style="width:32px;height:32px;background:#7B1D1D;">✓</div>
+    <div style="height:3px;flex:1;background:#7B1D1D;"></div>
+    <div class="d-flex align-items-center justify-content-center rounded-circle text-white fw-bold"
+         style="width:32px;height:32px;background:#7B1D1D;">3</div>
+    <div style="height:3px;flex:1;background:#ddd;"></div>
+    <div class="d-flex align-items-center justify-content-center rounded-circle fw-bold"
+         style="width:32px;height:32px;background:#ddd;color:#888;">4</div>
+</div>
+<p class="text-muted small mb-4">Etapa 3 de 4 — Foto e documentos</p>
+
+<div class="card border-0 shadow-sm mb-3">
+    <div class="card-body p-4">
+        <form method="POST" action="{{ url_for('criancas.cadastro_etapa3') }}" enctype="multipart/form-data" autocomplete="off">
+            {{ form.hidden_tag() }}
+
+            <p class="text-muted small mb-4">Todos os campos são opcionais e podem ser adicionados depois.</p>
+
+            <!-- Foto da criança -->
+            <div class="mb-4 p-3 rounded" style="background:#f8f8f8;">
+                <label class="form-label fw-bold">
+                    <i class="bi bi-camera-fill" style="color:#7B1D1D;"></i>
+                    Foto da criança
+                </label>
+                {{ form.foto_crianca(class="form-control") }}
+            </div>
+
+            <!-- Documento da criança -->
+            <div class="mb-4 p-3 rounded" style="background:#f8f8f8;">
+                <label class="form-label fw-bold">
+                    <i class="bi bi-person-vcard" style="color:#7B1D1D;"></i>
+                    Documento da criança (RG ou certidão)
+                </label>
+                {{ form.foto_documento(class="form-control") }}
+            </div>
+
+            <!-- Vacina -->
+            <div class="mb-4 p-3 rounded" style="background:#f8f8f8;">
+                <label class="form-label fw-bold">
+                    <i class="bi bi-heart-pulse" style="color:#7B1D1D;"></i>
+                    Carteirinha de vacinação
+                </label>
+                {{ form.foto_vacina(class="form-control") }}
+            </div>
+
+            <!-- Matrícula -->
+            <div class="mb-4 p-3 rounded" style="background:#f8f8f8;">
+                <label class="form-label fw-bold">
+                    <i class="bi bi-journal-text" style="color:#7B1D1D;"></i>
+                    Comprovante de matrícula escolar
+                </label>
+                {{ form.foto_matricula(class="form-control") }}
+            </div>
+
+            <!-- Bolsa família -->
+            <div class="mb-4 p-3 rounded" style="background:#f8f8f8;">
+                <label class="form-label fw-bold">
+                    <i class="bi bi-card-text" style="color:#7B1D1D;"></i>
+                    Cartão Bolsa Família ou NISS
+                </label>
+                {{ form.foto_bolsa_familia(class="form-control") }}
+            </div>
+
+            <!-- Comprovante de residência -->
+            <div class="mb-4 p-3 rounded" style="background:#f8f8f8;">
+                <label class="form-label fw-bold">
+                    <i class="bi bi-house" style="color:#7B1D1D;"></i>
+                    Comprovante de residência
+                </label>
+                {{ form.foto_comp_residencia(class="form-control") }}
+            </div>
+
+            <div class="d-flex gap-2">
+                <a href="{{ url_for('criancas.cadastro_etapa2') }}"
+                   class="btn btn-outline-secondary w-50">
+                    <i class="bi bi-arrow-left"></i> Voltar
+                </a>
+                <button type="submit" class="btn w-50 text-white fw-bold"
+                        style="background-color:#7B1D1D;">
+                    Próximo <i class="bi bi-arrow-right"></i>
+                </button>
+            </div>
+
+        </form>
+    </div>
+</div>
+
+{% endblock %}

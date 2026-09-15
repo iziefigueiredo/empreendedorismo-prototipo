@@ -1,0 +1,87 @@
+{% extends "shared/base.html" %}
+
+{% block title %}Presentes de Natal{% endblock %}
+
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-2 no-print">
+    <h5 class="fw-bold mb-0">Presentes de Natal — Etiquetas</h5>
+    <button onclick="window.print()" class="btn btn-sm text-white" style="background-color:#7B1D1D;">
+        <i class="bi bi-printer-fill"></i> Imprimir
+    </button>
+</div>
+<p class="text-muted small mb-4 no-print">{{ criancas|length }} criança(s) ativa(s) — 5 etiquetas por folha na impressão</p>
+
+<div class="etiquetas">
+    {% for c in criancas %}
+    <div class="etiqueta">
+        {% if c.foto_crianca %}
+        <div class="etiqueta-foto">
+            <img src="{{ c.foto_crianca }}" alt="Foto de {{ c.nome }}"
+                 style="width:100%;height:100%;object-fit:cover;
+                        object-position: {{ c.foto_crianca_pos_x if c.foto_crianca_pos_x is not none else 50 }}% {{ c.foto_crianca_pos_y if c.foto_crianca_pos_y is not none else 50 }}%;
+                        transform: rotate({{ c.foto_crianca_rotacao }}deg);">
+        </div>
+        {% else %}
+        <div class="etiqueta-foto d-flex align-items-center justify-content-center bg-light">
+            <i class="bi bi-person" style="font-size:3rem;color:#ccc;"></i>
+        </div>
+        {% endif %}
+        <div class="etiqueta-info">
+            <p class="etiqueta-nome">{{ c.nome }}</p>
+            <p class="etiqueta-tamanho">Calça: <strong>{{ c.tamanho_calca or '—' }}</strong> · Short: <strong>{{ c.tamanho_short or '—' }}</strong></p>
+            <p class="etiqueta-tamanho">Blusa: <strong>{{ c.tamanho_blusa or '—' }}</strong> · Sapato: <strong>{{ c.tamanho_sapato or '—' }}</strong></p>
+        </div>
+    </div>
+    {% else %}
+    <div class="text-muted">Nenhuma criança ativa cadastrada.</div>
+    {% endfor %}
+</div>
+
+<style>
+.etiquetas {
+    display: flex;
+    flex-direction: column;
+    gap: 14px;
+}
+.etiqueta {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+    border: 1px solid #ddd;
+    border-radius: 10px;
+    padding: 12px;
+    background: white;
+}
+.etiqueta-foto {
+    width: 200px;
+    height: 200px;
+    border-radius: 10px;
+    overflow: hidden;
+    flex-shrink: 0;
+}
+.etiqueta-nome {
+    font-size: 1.4rem;
+    font-weight: 700;
+    margin-bottom: 6px;
+}
+.etiqueta-tamanho {
+    font-size: 1rem;
+    color: #555;
+    margin-bottom: 2px;
+}
+
+@media print {
+    .no-print, .header-osgade, .boas-vindas, .sidebar, .nav-inferior { display: none !important; }
+    .conteudo { padding: 0 !important; }
+    .etiqueta {
+        border: 1px dashed #999;
+        page-break-inside: avoid;
+        break-inside: avoid;
+    }
+    .etiqueta:nth-of-type(4n) {
+        page-break-after: always;
+        break-after: page;
+    }
+}
+</style>
+{% endblock %}

@@ -1,0 +1,93 @@
+{% extends "shared/base.html" %}
+
+{% block title %}Visão Geral{% endblock %}
+
+{% block content %}
+
+{% if contagem_vestuario > 0 %}
+<div class="alert alert-warning d-flex align-items-center gap-2 mb-3">
+    <i class="bi bi-exclamation-triangle-fill" style="font-size:1.3rem;"></i>
+    <div><strong>{{ contagem_vestuario }} criança(s)</strong> com vestuário desatualizado este ano.
+        <a href="{{ url_for('criancas.consultar') }}">Ver lista</a>
+    </div>
+</div>
+{% endif %}
+
+<div class="row g-3">
+
+    {% if current_user.pode_cadastrar %}
+    <div class="col-6 col-md-4">
+        <div class="card h-100 border-0 shadow-sm text-white" style="background-color: #7B1D1D;">
+            <div class="card-body d-flex flex-column align-items-center justify-content-center text-center py-4">
+                <i class="bi bi-person-plus-fill mb-2" style="font-size: 2.5rem;"></i>
+                <h6 class="fw-bold mb-3">NOVO CADASTRO</h6>
+                <a href="{{ url_for('criancas.cadastro_etapa1') }}" class="btn btn-light btn-sm w-100" style="color: #7B1D1D; font-weight: 600;">Começar</a>
+            </div>
+        </div>
+    </div>
+    {% endif %}
+
+    {% if current_user.pode_ver_dados %}
+    <div class="col-6 col-md-4">
+        <div class="card h-100 border-0 shadow-sm text-white" style="background-color: #B8860B;">
+            <div class="card-body d-flex flex-column align-items-center justify-content-center text-center py-4">
+                <i class="bi bi-search mb-2" style="font-size: 2.5rem;"></i>
+                <h6 class="fw-bold mb-3">CONSULTAR DADOS</h6>
+                <a href="{{ url_for('criancas.consultar') }}" class="btn btn-light btn-sm w-100" style="color: #B8860B; font-weight: 600;">Buscar</a>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-6 col-md-4">
+        <div class="card h-100 border-0 shadow-sm text-white" style="background-color: #2E6B5E;">
+            <div class="card-body d-flex flex-column align-items-center justify-content-center text-center py-4">
+                <i class="bi bi-bar-chart-fill mb-2" style="font-size: 2.5rem;"></i>
+                <h6 class="fw-bold mb-3">RELATÓRIOS</h6>
+                <a href="{{ url_for('relatorios.index') }}" class="btn btn-light btn-sm w-100" style="color: #2E6B5E; font-weight: 600;">Visualizar</a>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-6 col-md-4">
+        <div class="card h-100 border-0 shadow-sm text-white" style="background-color: #A0522D;">
+            <div class="card-body d-flex flex-column align-items-center justify-content-center text-center py-4">
+                <i class="bi bi-gift-fill mb-2" style="font-size: 2.5rem;"></i>
+                <h6 class="fw-bold mb-3">PRESENTES DE NATAL</h6>
+                <a href="{{ url_for('relatorios.presentes_natal') }}" class="btn btn-light btn-sm w-100" style="color: #A0522D; font-weight: 600;">Ver lista</a>
+            </div>
+        </div>
+    </div>
+    {% endif %}
+
+    <div class="col-6 col-md-4">
+        <div class="card h-100 border-0 shadow-sm text-white" style="background-color: #1A5276;">
+            <div class="card-body d-flex flex-column align-items-center justify-content-center text-center py-4">
+                <i class="bi bi-bag-fill mb-2" style="font-size: 2.5rem;"></i>
+                <h6 class="fw-bold mb-3">BAZAR</h6>
+                <a href="#" class="btn btn-light btn-sm w-100" style="color: #1A5276; font-weight: 600;">Gerenciar</a>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-6 col-md-4">
+        <div class="card h-100 border-0 shadow-sm text-white" style="background-color: #6C3483;">
+            <div class="card-body d-flex flex-column align-items-center justify-content-center text-center py-4">
+                <i class="bi bi-box-seam-fill mb-2" style="font-size: 2.5rem;"></i>
+                <h6 class="fw-bold mb-3">ESTOQUE</h6>
+                <a href="#" class="btn btn-light btn-sm w-100" style="color: #6C3483; font-weight: 600;">Gerenciar</a>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-6 col-md-4">
+        <div class="card h-100 border-0 shadow-sm text-white" style="background-color: #B03A2E;">
+            <div class="card-body d-flex flex-column align-items-center justify-content-center text-center py-4">
+                <i class="bi bi-heart-fill mb-2" style="font-size: 2.5rem;"></i>
+                <h6 class="fw-bold mb-3">DOAÇÕES</h6>
+                <a href="#" class="btn btn-light btn-sm w-100" style="color: #B03A2E; font-weight: 600;">Registrar</a>
+            </div>
+        </div>
+    </div>
+
+</div>
+{% endblock %}

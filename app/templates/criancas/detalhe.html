@@ -1,0 +1,509 @@
+{% extends "shared/base.html" %}
+
+{% block title %}{{ crianca.nome }}{% endblock %}
+
+{% block content %}
+
+
+<!-- Cabeçalho -->
+<div class="d-flex align-items-center gap-3 mb-4">
+    <a href="{{ url_for('criancas.consultar') }}" class="btn btn-sm btn-outline-secondary">
+        <i class="bi bi-arrow-left"></i>
+    </a>
+    
+    {% if crianca.foto_crianca %}
+    <div class="d-flex align-items-center gap-2">
+        <div style="width:56px;height:56px;border-radius:50%;overflow:hidden;border:2px solid #7B1D1D;">
+            <img src="{{ crianca.foto_crianca }}" alt="Foto de {{ crianca.nome }}"
+                 style="width:100%;height:100%;object-fit:cover;
+                        object-position: {{ crianca.foto_crianca_pos_x if crianca.foto_crianca_pos_x is not none else 50 }}% {{ crianca.foto_crianca_pos_y if crianca.foto_crianca_pos_y is not none else 50 }}%;
+                        transform: rotate({{ crianca.foto_crianca_rotacao }}deg);">
+        </div>
+        
+        {% if current_user.is_admin %}
+        <div style="position:relative;">
+        <button type="button" class="btn btn-sm btn-outline-secondary" onclick="toggleAjuste()" title="Ajustar foto">
+            <i class="bi bi-sliders"></i>
+        </button>
+        <div id="ajuste-foto" style="display:none;" class="ajuste-grid">
+            <div></div>
+            <a href="{{ url_for('criancas.mover_foto', id=crianca.id, direcao='cima') }}" class="btn btn-sm btn-outline-secondary" title="Mover para cima">
+                <i class="bi bi-arrow-up"></i>
+            </a>
+            <div></div>
+            <a href="{{ url_for('criancas.mover_foto', id=crianca.id, direcao='esquerda') }}" class="btn btn-sm btn-outline-secondary" title="Mover para esquerda">
+                <i class="bi bi-arrow-left"></i>
+            </a>
+            <a href="{{ url_for('criancas.girar_foto', id=crianca.id) }}" class="btn btn-sm btn-outline-secondary" title="Girar">
+                <i class="bi bi-arrow-clockwise"></i>
+            </a>
+            <a href="{{ url_for('criancas.mover_foto', id=crianca.id, direcao='direita') }}" class="btn btn-sm btn-outline-secondary" title="Mover para direita">
+                <i class="bi bi-arrow-right"></i>
+            </a>
+            <div></div>
+            <a href="{{ url_for('criancas.mover_foto', id=crianca.id, direcao='baixo') }}" class="btn btn-sm btn-outline-secondary" title="Mover para baixo">
+                <i class="bi bi-arrow-down"></i>
+            </a>
+            <div></div>
+        </div>
+        </div>
+        {% endif %}
+        
+    </div>
+    {% endif %}
+    <div>
+        <h5 class="mb-0 fw-bold">{{ crianca.nome }}</h5>
+        <span class="badge" style="background-color:#7B1D1D;">
+            {% if crianca.turno == 'manha' %}Manhã
+            {% elif crianca.turno == 'tarde' %}Tarde
+            {% else %}Integral{% endif %}
+        </span>
+        {% if crianca.status == 'inativa' %}
+            <span class="badge bg-danger ms-1">Inativa</span>
+        {% endif %}
+    </div>
+</div>
+
+<!-- Dados pessoais -->
+<div class="card border-0 shadow-sm mb-3">
+    <div class="card-header bg-white d-flex justify-content-between align-items-center"
+         style="border-left: 4px solid #7B1D1D;">
+        <span class="fw-bold"><i class="bi bi-person-fill"></i> Dados pessoais</span>
+        {% if current_user.is_admin %}
+        <button class="btn btn-sm btn-outline-secondary" onclick="toggleEdit('dados')">
+            <i class="bi bi-pencil-fill"></i> Editar
+        </button>
+        {% endif %}
+    </div>
+    <div class="card-body">
+        <!-- Visualização -->
+        <div id="dados-view">
+            <div class="row g-2">
+                <div class="col-6">
+                    <p class="text-muted small mb-0">Nome</p>
+                    <p class="mb-0 fw-bold">{{ crianca.nome }}</p>
+                </div>
+                <div class="col-6">
+                    <p class="text-muted small mb-0">Data de nascimento</p>
+                    <p class="mb-0 fw-bold">{{ crianca.data_nascimento.strftime('%d/%m/%Y') }}</p>
+                </div>
+                <div class="col-6 mt-2">
+                    <p class="text-muted small mb-0">Sexo</p>
+                    <p class="mb-0 fw-bold">{{ 'Masculino' if crianca.sexo == 'M' else 'Feminino' }}</p>
+                </div>
+                <div class="col-6 mt-2">
+                    <p class="text-muted small mb-0">Turno</p>
+                    <p class="mb-0 fw-bold">
+                        {% if crianca.turno == 'manha' %}Manhã
+                        {% elif crianca.turno == 'tarde' %}Tarde
+                        {% else %}Integral{% endif %}
+                    </p>
+                </div>
+                <div class="col-6 mt-2">
+                    <p class="text-muted small mb-0">Status</p>
+                    <p class="mb-0 fw-bold">
+                        {% if crianca.status == 'ativa' %}
+                            <span class="text-success">Ativa</span>
+                        {% else %}
+                            <span class="text-danger">Inativa</span>
+                        {% endif %}
+                    </p>
+                </div>
+            </div>
+        </div>
+        {% if current_user.is_admin %}
+        <!-- Edição -->
+        <div id="dados-edit" style="display:none;">
+            <form method="POST" action="{{ url_for('criancas.editar_dados', id=crianca.id) }}" autocomplete="off">
+                <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                <div class="mb-3">
+                    <label class="form-label">Nome completo</label>
+                    <input type="text" name="nome" class="form-control" value="{{ crianca.nome }}" required>
+                </div>
+                <div class="row g-3 mb-3">
+                    <div class="col-12 col-md-6">
+                        <label class="form-label">Data de nascimento</label>
+                        <input type="date" name="data_nascimento" class="form-control"
+                               value="{{ crianca.data_nascimento.strftime('%Y-%m-%d') }}" required>
+                    </div>
+                    <div class="col-12 col-md-6">
+                        <label class="form-label">Sexo</label>
+                        <select name="sexo" class="form-select">
+                            <option value="M" {{ 'selected' if crianca.sexo == 'M' }}>Masculino</option>
+                            <option value="F" {{ 'selected' if crianca.sexo == 'F' }}>Feminino</option>
+                        </select>
+                    </div>
+                </div>
+                <div class="mb-3">
+                    <label class="form-label">Turno</label>
+                    <select name="turno" class="form-select">
+                        <option value="manha" {{ 'selected' if crianca.turno == 'manha' }}>Manhã</option>
+                        <option value="tarde" {{ 'selected' if crianca.turno == 'tarde' }}>Tarde</option>
+                        <option value="integral" {{ 'selected' if crianca.turno == 'integral' }}>Integral</option>
+                    </select>
+                </div>
+                <div class="mb-3">
+                    <label class="form-label">Status</label>
+                    <select name="status" class="form-select">
+                        <option value="ativa" {{ 'selected' if crianca.status == 'ativa' }}>Ativa</option>
+                        <option value="inativa" {{ 'selected' if crianca.status == 'inativa' }}>Inativa</option>
+                    </select>
+                </div>
+                <div class="d-flex gap-2">
+                    <button type="submit" class="btn btn-sm text-white" style="background-color:#7B1D1D;">
+                        <i class="bi bi-check-lg"></i> Salvar
+                    </button>
+                    <button type="button" class="btn btn-sm btn-outline-secondary" onclick="toggleEdit('dados')">
+                        Cancelar
+                    </button>
+                </div>
+            </form>
+        </div>
+        {% endif %}
+    </div>
+</div>
+
+<!-- Saúde -->
+<div class="card border-0 shadow-sm mb-3">
+    <div class="card-header bg-white d-flex justify-content-between align-items-center"
+         style="border-left: 4px solid #B03A2E;">
+        <span class="fw-bold"><i class="bi bi-heart-pulse-fill" style="color:#B03A2E;"></i> Saúde</span>
+        {% if current_user.is_admin %}
+        <button class="btn btn-sm btn-outline-secondary" onclick="toggleEdit('saude')">
+            <i class="bi bi-pencil-fill"></i> Editar
+        </button>
+        {% endif %}
+    </div>
+    <div class="card-body">
+        <div id="saude-view">
+            <p class="text-muted small mb-1">Alergias</p>
+            <p class="mb-3">
+                {% if crianca.alergias %}
+                    <span class="badge bg-warning text-dark">
+                        <i class="bi bi-exclamation-triangle-fill"></i> {{ crianca.alergias }}
+                    </span>
+                {% else %}
+                    <span class="text-muted">Nenhuma alergia registrada</span>
+                {% endif %}
+            </p>
+            <p class="text-muted small mb-1">Problemas médicos</p>
+            <p class="mb-0">
+                {% if crianca.problemas_medicos %}
+                    <span class="badge bg-danger">
+                        <i class="bi bi-exclamation-circle-fill"></i> {{ crianca.problemas_medicos }}
+                    </span>
+                {% else %}
+                    <span class="text-muted">Nenhum problema médico registrado</span>
+                {% endif %}
+            </p>
+        </div>
+        {% if current_user.is_admin %}
+        <div id="saude-edit" style="display:none;">
+            <form method="POST" action="{{ url_for('criancas.editar_saude', id=crianca.id) }}" autocomplete="off">
+                <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                <div class="mb-3">
+                    <label class="form-label">Alergias</label>
+                    <textarea name="alergias" class="form-control" rows="2"
+                              placeholder="Descreva alergias (opcional)">{{ crianca.alergias or '' }}</textarea>
+                </div>
+                <div class="mb-3">
+                    <label class="form-label">Problemas médicos</label>
+                    <textarea name="problemas_medicos" class="form-control" rows="2"
+                              placeholder="Descreva problemas médicos (opcional)">{{ crianca.problemas_medicos or '' }}</textarea>
+                </div>
+                <div class="d-flex gap-2">
+                    <button type="submit" class="btn btn-sm text-white" style="background-color:#7B1D1D;">
+                        <i class="bi bi-check-lg"></i> Salvar
+                    </button>
+                    <button type="button" class="btn btn-sm btn-outline-secondary" onclick="toggleEdit('saude')">
+                        Cancelar
+                    </button>
+                </div>
+            </form>
+        </div>
+               {% endif %}
+    </div>
+</div>
+
+<!-- Vestuário -->
+<div class="card border-0 shadow-sm mb-3">
+    <div class="card-header bg-white d-flex justify-content-between align-items-center"
+         style="border-left: 4px solid #B8860B;">
+        <span class="fw-bold">
+            <i class="bi bi-bag-fill" style="color:#B8860B;"></i> Vestuário
+            {% if crianca.vestuario_desatualizado %}
+                <span class="badge bg-warning text-dark ms-1">Desatualizado</span>
+            {% endif %}
+        </span>
+        {% if current_user.is_admin %}
+        <button class="btn btn-sm btn-outline-secondary" onclick="toggleEdit('vestuario')">
+            <i class="bi bi-pencil-fill"></i> Editar
+        </button>
+        {% endif %}
+    </div>
+    <div class="card-body">
+        <div id="vestuario-view">
+            <div class="row g-2">
+                <div class="col-6">
+                    <p class="text-muted small mb-0">Calça</p>
+                    <p class="mb-0 fw-bold">{{ crianca.tamanho_calca or '—' }}</p>
+                </div>
+                <div class="col-6">
+                    <p class="text-muted small mb-0">Short</p>
+                    <p class="mb-0 fw-bold">{{ crianca.tamanho_short or '—' }}</p>
+                </div>
+                <div class="col-6 mt-2">
+                    <p class="text-muted small mb-0">Blusa</p>
+                    <p class="mb-0 fw-bold">{{ crianca.tamanho_blusa or '—' }}</p>
+                </div>
+                <div class="col-6 mt-2">
+                    <p class="text-muted small mb-0">Sapato</p>
+                    <p class="mb-0 fw-bold">{{ crianca.tamanho_sapato or '—' }}</p>
+                </div>
+            </div>
+            {% if crianca.vestuario_atualizado_em %}
+            <p class="text-muted small mt-3 mb-0">Última atualização: {{ crianca.vestuario_atualizado_em.strftime('%d/%m/%Y') }}</p>
+            {% endif %}
+        </div>
+        {% if current_user.is_admin %}
+        <div id="vestuario-edit" style="display:none;">
+            <form method="POST" action="{{ url_for('criancas.editar_vestuario', id=crianca.id) }}" autocomplete="off">
+                <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                <div class="row g-3 mb-3">
+                    <div class="col-6">
+                        <label class="form-label">Calça</label>
+                        <input type="text" name="tamanho_calca" class="form-control" value="{{ crianca.tamanho_calca or '' }}">
+                    </div>
+                    <div class="col-6">
+                        <label class="form-label">Short</label>
+                        <input type="text" name="tamanho_short" class="form-control" value="{{ crianca.tamanho_short or '' }}">
+                    </div>
+                    <div class="col-6">
+                        <label class="form-label">Blusa</label>
+                        <input type="text" name="tamanho_blusa" class="form-control" value="{{ crianca.tamanho_blusa or '' }}">
+                    </div>
+                    <div class="col-6">
+                        <label class="form-label">Sapato</label>
+                        <input type="text" name="tamanho_sapato" class="form-control" value="{{ crianca.tamanho_sapato or '' }}">
+                    </div>
+                </div>
+                <div class="d-flex gap-2">
+                    <button type="submit" class="btn btn-sm text-white" style="background-color:#7B1D1D;">
+                        <i class="bi bi-check-lg"></i> Salvar
+                    </button>
+                    <button type="button" class="btn btn-sm btn-outline-secondary" onclick="toggleEdit('vestuario')">
+                        Cancelar
+                    </button>
+                </div>
+            </form>
+        </div>
+        {% endif %}
+    </div>
+</div>
+
+
+<!-- Familiares -->
+<div class="card border-0 shadow-sm mb-3">
+    <div class="card-header bg-white d-flex justify-content-between align-items-center"
+         style="border-left: 4px solid #1A5276;">
+        <span class="fw-bold"><i class="bi bi-people-fill" style="color:#1A5276;"></i> Familiares</span>
+        {% if current_user.is_admin %}
+        <button class="btn btn-sm btn-outline-secondary" onclick="toggleEdit('familiar')">
+            <i class="bi bi-plus-lg"></i> Adicionar
+        </button>
+        {% endif %}
+    </div>
+    <div class="card-body p-0">
+        {% if crianca.familiares %}
+            {% for f in crianca.familiares %}
+            <div class="p-3 {% if not loop.last %}border-bottom{% endif %}">
+                <div class="d-flex justify-content-between align-items-start">
+                    <div>
+                        <p class="mb-0 fw-bold">{{ f.nome }}</p>
+                        <p class="mb-1 text-muted small">{{ f.parentesco|capitalize }}</p>
+                        <a href="tel:{{ f.telefone }}" class="btn btn-sm btn-outline-secondary me-1">
+                            <i class="bi bi-telephone-fill"></i> {{ f.telefone }}
+                        </a>
+                        {% if current_user.is_admin and f.cpf %}
+                            <span class="text-muted small">CPF: {{ f.cpf }}</span>
+                        {% endif %}
+                    </div>
+                    <div class="text-end d-flex flex-column gap-1">
+                        {% if f.autorizado_buscar %}
+                            <span class="badge bg-success"><i class="bi bi-check-circle-fill"></i> Buscar</span>
+                        {% else %}
+                            <span class="badge bg-secondary"><i class="bi bi-x-circle-fill"></i> Não busca</span>
+                        {% endif %}
+                        {% if current_user.is_admin %}
+                        <a href="{{ url_for('criancas.remover_familiar_detalhe', id=crianca.id, familiar_id=f.id) }}"
+                           class="btn btn-sm btn-outline-danger mt-1"
+                           onclick="return confirm('Remover {{ f.nome }}?')">
+                            <i class="bi bi-trash"></i>
+                        </a>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+            {% endfor %}
+        {% else %}
+            <div class="p-3 text-muted">Nenhum familiar cadastrado.</div>
+        {% endif %}
+
+        {% if current_user.is_admin %}
+        <!-- Formulário adicionar familiar -->
+        <div id="familiar-edit" style="display:none;" class="p-3 border-top">
+            <form method="POST" action="{{ url_for('criancas.adicionar_familiar', id=crianca.id) }}"
+                  enctype="multipart/form-data" autocomplete="off">
+                <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                <div class="mb-3">
+                    <label class="form-label">Nome completo</label>
+                    <input type="text" name="nome" class="form-control" required>
+                </div>
+                <div class="row g-3 mb-3">
+                    <div class="col-12 col-md-6">
+                        <label class="form-label">Parentesco</label>
+                        <select name="parentesco" class="form-select">
+                            <option value="mae">Mãe</option>
+                            <option value="pai">Pai</option>
+                            <option value="avo_materna">Avó materna</option>
+                            <option value="avo_paterno">Avô paterno</option>
+                            <option value="tio">Tio</option>
+                            <option value="tia">Tia</option>
+                            <option value="outro">Outro</option>
+                        </select>
+                    </div>
+                    <div class="col-12 col-md-6">
+                        <label class="form-label">Telefone</label>
+                        <input type="text" name="telefone" class="form-control"
+                               placeholder="(27) 99999-9999" required>
+                    </div>
+                </div>
+                <div class="mb-3">
+                    <label class="form-label">CPF</label>
+                    <input type="text" name="cpf" class="form-control" placeholder="000.000.000-00">
+                </div>
+                <div class="mb-3">
+                    <label class="form-label">Foto do documento</label>
+                    <input type="file" name="foto_documento" accept="image/*" class="form-control">
+                </div>
+                <div class="mb-3 form-check">
+                    <input type="checkbox" name="autorizado_buscar" class="form-check-input" id="autorizado">
+                    <label class="form-check-label" for="autorizado">Autorizado a buscar</label>
+                </div>
+                <div class="d-flex gap-2">
+                    <button type="submit" class="btn btn-sm text-white" style="background-color:#7B1D1D;">
+                        <i class="bi bi-check-lg"></i> Salvar
+                    </button>
+                    <button type="button" class="btn btn-sm btn-outline-secondary" onclick="toggleEdit('familiar')">
+                        Cancelar
+                    </button>
+                </div>
+            </form>
+        </div>
+        {% endif %}
+    </div>
+</div>
+
+{% if current_user.is_admin %}
+<!-- Documentos -->
+<div class="card border-0 shadow-sm mb-3">
+    <div class="card-header bg-white fw-bold" style="border-left: 4px solid #2E6B5E;">
+        <i class="bi bi-folder-fill" style="color:#2E6B5E;"></i> Documentos
+    </div>
+    <div class="card-body">
+        <form method="POST" action="{{ url_for('criancas.editar_documentos', id=crianca.id) }}"
+              enctype="multipart/form-data" autocomplete="off">
+            <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+            {% set docs = [
+                ('foto_crianca', 'Foto da criança'),
+                ('foto_documento', 'Documento da criança'),
+                ('foto_vacina', 'Carteirinha de vacinação'),
+                ('foto_matricula', 'Comprovante de matrícula'),
+                ('foto_bolsa_familia', 'Cartão Bolsa Família / NISS'),
+                ('foto_comp_residencia', 'Comprovante de residência'),
+            ] %}
+            {% for campo, label in docs %}
+            <div class="d-flex justify-content-between align-items-center mb-3 flex-wrap gap-2">
+                <span class="small fw-bold">{{ label }}</span>
+                <div class="d-flex align-items-center gap-2">
+                    {% if crianca|attr(campo) %}
+                        <a href="{{ crianca|attr(campo) }}" target="_blank"
+                           class="btn btn-sm btn-outline-success">
+                            <i class="bi bi-eye-fill"></i> Ver
+                        </a>
+                    {% else %}
+                        <span class="badge bg-secondary">Não enviado</span>
+                    {% endif %}
+                    <input type="file" name="{{ campo }}" accept="image/*"
+                           capture="environment" class="form-control form-control-sm"
+                           style="max-width:180px;">
+                </div>
+            </div>
+            {% endfor %}
+            <button type="submit" class="btn btn-sm text-white mt-2" style="background-color:#7B1D1D;">
+                <i class="bi bi-cloud-upload-fill"></i> Atualizar documentos
+            </button>
+        </form>
+    </div>
+</div>
+
+<!-- Histórico -->
+<div class="card border-0 shadow-sm mb-3">
+    <div class="card-header bg-white fw-bold" style="border-left: 4px solid #6C3483;">
+        <i class="bi bi-clock-history" style="color:#6C3483;"></i> Histórico de alterações
+    </div>
+    <div class="card-body p-0">
+        {% if crianca.historico %}
+            {% for h in crianca.historico %}
+            <div class="p-3 {% if not loop.last %}border-bottom{% endif %}">
+                <p class="mb-0 small">{{ h.acao }}</p>
+                <p class="mb-0 text-muted small">{{ h.criado_em.strftime('%d/%m/%Y %H:%M') }}</p>
+            </div>
+            {% endfor %}
+        {% else %}
+            <div class="p-3 text-muted small">Nenhum registro ainda.</div>
+        {% endif %}
+    </div>
+</div>
+{% endif %}
+
+<style>
+.ajuste-grid {
+    position: absolute;
+    top: 36px;
+    left: 0;
+    background: white;
+    border: 1px solid #ddd;
+    border-radius: 10px;
+    padding: 8px;
+    display: grid;
+    grid-template-columns: repeat(3, 34px);
+    grid-template-rows: repeat(3, 34px);
+    gap: 4px;
+    z-index: 10;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.15);
+}
+.ajuste-grid a, .ajuste-grid button {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 0;
+}
+</style>
+
+
+
+<script>
+function toggleEdit(secao) {
+    const view = document.getElementById(secao + '-view');
+    const edit = document.getElementById(secao + '-edit');
+    if (view) view.style.display = view.style.display === 'none' ? '' : 'none';
+    edit.style.display = edit.style.display === 'none' ? '' : 'none';
+}
+function toggleAjuste() {
+    const painel = document.getElementById('ajuste-foto');
+    painel.style.display = painel.style.display === 'none' ? '' : 'none';
+}
+</script>
+
+{% endblock %}

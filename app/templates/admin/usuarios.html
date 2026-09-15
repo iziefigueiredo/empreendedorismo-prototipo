@@ -1,0 +1,96 @@
+{% extends "shared/base.html" %}
+
+{% block title %}Usuários{% endblock %}
+
+{% block content %}
+<h5 class="fw-bold mb-4">Gerenciar usuários</h5>
+
+<div class="card border-0 shadow-sm mb-4">
+    <div class="card-body p-4">
+        <form method="POST" autocomplete="off">
+            {{ form.hidden_tag() }}
+            <div class="mb-3">
+                {{ form.nome.label(class="form-label") }}
+                {{ form.nome(class="form-control") }}
+                {% for erro in form.nome.errors %}<div class="text-danger small">{{ erro }}</div>{% endfor %}
+            </div>
+            <div class="mb-3">
+                {{ form.email.label(class="form-label") }}
+                {{ form.email(class="form-control") }}
+                {% for erro in form.email.errors %}<div class="text-danger small">{{ erro }}</div>{% endfor %}
+            </div>
+            <div class="mb-3">
+                {{ form.senha.label(class="form-label") }}
+                {{ form.senha(class="form-control") }}
+                {% for erro in form.senha.errors %}<div class="text-danger small">{{ erro }}</div>{% endfor %}
+            </div>
+            <div class="mb-3">
+                {{ form.tipo.label(class="form-label") }}
+                {{ form.tipo(class="form-select") }}
+            </div>
+            <button type="submit" class="btn text-white" style="background-color:#7B1D1D;">
+                <i class="bi bi-person-plus-fill"></i> Criar usuário
+            </button>
+        </form>
+    </div>
+</div>
+
+<div class="card border-0 shadow-sm">
+    <div class="card-body p-0">
+        {% for u in usuarios %}
+        <div class="p-3 {% if not loop.last %}border-bottom{% endif %}">
+            <div class="d-flex justify-content-between align-items-center flex-wrap gap-2">
+                <div>
+                    <p class="mb-0 fw-bold">{{ u.nome }} {% if not u.ativo %}<span class="badge bg-secondary">Inativo</span>{% endif %}</p>
+                    <p class="mb-0 text-muted small">{{ u.email }}</p>
+                </div>
+                <div class="d-flex gap-2 flex-wrap align-items-center">
+                    <form method="POST" action="{{ url_for('admin.alterar_tipo', id=u.id) }}" class="d-flex gap-1 align-items-center">
+                        <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                        <select name="tipo" class="form-select form-select-sm" style="width:auto;">
+                            <option value="funcionario" {{ 'selected' if u.tipo == 'funcionario' }}>Funcionária</option>
+                            <option value="cadastradora" {{ 'selected' if u.tipo == 'cadastradora' }}>Cadastradora</option>
+                            <option value="admin" {{ 'selected' if u.tipo == 'admin' }}>Admin</option>
+                        </select>
+                        <button type="submit" class="btn btn-sm btn-outline-secondary">Salvar</button>
+                    </form>
+                    <button type="button" class="btn btn-sm btn-outline-secondary" onclick="toggleSenha({{ u.id }})">
+                        <i class="bi bi-key-fill"></i> Redefinir senha
+                    </button>
+                    <a href="{{ url_for('admin.desativar_usuario', id=u.id) }}" class="btn btn-sm btn-outline-secondary"
+                       onclick="return confirm('{{ 'Desativar' if u.ativo else 'Reativar' }} {{ u.nome }}?')">
+                        {{ 'Desativar' if u.ativo else 'Reativar' }}
+                    </a>
+                    {% if u.id != current_user.id %}
+                    <form method="POST" action="{{ url_for('admin.excluir_usuario', id=u.id) }}" class="d-inline"
+                          onsubmit="return confirm('Excluir {{ u.nome }} definitivamente? Essa ação não pode ser desfeita.')">
+                        <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                        <button type="submit" class="btn btn-sm btn-outline-danger">
+                            <i class="bi bi-trash"></i> Excluir
+                        </button>
+                    </form>
+                    {% endif %}
+                </div>
+            </div>
+            <div id="senha-{{ u.id }}" style="display:none;" class="mt-2">
+                <form method="POST" action="{{ url_for('admin.redefinir_senha', id=u.id) }}" class="d-flex gap-2">
+                    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                    <input type="text" name="nova_senha" class="form-control form-control-sm"
+                           placeholder="Nova senha (mín. 6 caracteres)" required>
+                    <button type="submit" class="btn btn-sm text-white" style="background-color:#7B1D1D;">Salvar</button>
+                </form>
+            </div>
+        </div>
+        {% else %}
+        <div class="p-3 text-muted">Nenhum usuário cadastrado.</div>
+        {% endfor %}
+    </div>
+</div>
+
+<script>
+function toggleSenha(id) {
+    const el = document.getElementById('senha-' + id);
+    el.style.display = el.style.display === 'none' ? '' : 'none';
+}
+</script>
+{% endblock %}
