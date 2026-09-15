@@ -94,7 +94,40 @@
 
 <div class="card border-0 shadow-sm mb-4">
     <div class="card-header bg-white fw-bold" style="border-left: 4px solid #B03A2E;">
-        <i class="bi bi-heart-pulse-fill" style="color:#B03A2E;"></i> Saúde
+        <i class="bi bi-heart-pulse-fill" style="color:#B03A2E;"></i> Saúde - Resumo
+    </div>
+    <div class="card-body">
+        <div class="row g-3">
+            {% if alergias_top %}
+            <div class="col-md-6">
+                <h6 class="text-muted small mb-2">🍎 Alergias mais frequentes</h6>
+                {% for alergia, count in alergias_top %}
+                <div class="d-flex justify-content-between align-items-center mb-2">
+                    <span class="badge bg-warning text-dark">{{ alergia }}</span>
+                    <small class="text-muted">{{ count }} criança(s)</small>
+                </div>
+                {% endfor %}
+            </div>
+            {% endif %}
+
+            {% if problemas_top %}
+            <div class="col-md-6">
+                <h6 class="text-muted small mb-2">🏥 Problemas médicos mais frequentes</h6>
+                {% for problema, count in problemas_top %}
+                <div class="d-flex justify-content-between align-items-center mb-2">
+                    <span class="badge bg-danger">{{ problema }}</span>
+                    <small class="text-muted">{{ count }} criança(s)</small>
+                </div>
+                {% endfor %}
+            </div>
+            {% endif %}
+        </div>
+    </div>
+</div>
+
+<div class="card border-0 shadow-sm mb-4">
+    <div class="card-header bg-white fw-bold" style="border-left: 4px solid #B03A2E;">
+        <i class="bi bi-heart-pulse-fill" style="color:#B03A2E;"></i> Saúde - Lista Completa
     </div>
     <div class="card-body p-0">
         {% if com_alergia %}

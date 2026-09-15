@@ -55,6 +55,20 @@ def index():
     com_alergia = [c for c in criancas if c.alergias]
     com_problema = [c for c in criancas if c.problemas_medicos]
 
+    # 5a. Alergias agrupadas (mais frequentes)
+    alergias_contagem = {}
+    for c in com_alergia:
+        alergia = c.alergias.strip()
+        alergias_contagem[alergia] = alergias_contagem.get(alergia, 0) + 1
+    alergias_top = sorted(alergias_contagem.items(), key=lambda x: x[1], reverse=True)[:5]
+
+    # 5b. Problemas médicos agrupados (mais frequentes)
+    problemas_contagem = {}
+    for c in com_problema:
+        problema = c.problemas_medicos.strip()
+        problemas_contagem[problema] = problemas_contagem.get(problema, 0) + 1
+    problemas_top = sorted(problemas_contagem.items(), key=lambda x: x[1], reverse=True)[:5]
+
     # 6. Aniversariantes do mês
     aniversariantes = [c for c in criancas if c.data_nascimento.month == mes_atual]
     aniversariantes.sort(key=lambda c: c.data_nascimento.day)
@@ -103,6 +117,8 @@ def index():
         meses_labels=meses_labels,
         com_alergia=com_alergia,
         com_problema=com_problema,
+        alergias_top=alergias_top,
+        problemas_top=problemas_top,
         aniversariantes=aniversariantes,
         maes_solo=maes_solo,
         sem_doc_proprio=sem_doc_proprio,
